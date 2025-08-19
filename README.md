@@ -1,6 +1,7 @@
 # Powershell Scripts
 
-Bem-vindo ao repositório de Scripts PowerShell! Este espaço é dedicado a abrigar uma coleção de scripts úteis e prontos para uso, projetados para automatizar tarefas e simplificar processos no ambiente Windows.
+Bem-vindo ao repositório de Scripts PowerShell!
+Este espaço é dedicado a abrigar uma coleção de scripts úteis e prontos para uso, projetados para automatizar tarefas e simplificar processos no ambiente Windows.
 
 ## 📜 Sobre o Repositório
 
@@ -12,7 +13,8 @@ O objetivo principal deste repositório é fornecer soluções práticas atravé
 
 Esta pasta contém scripts desenvolvidos para gerenciar e interagir com certificados digitais do tipo A1.
 
-* **`Delete CERTIFICADOS A1 - ASSINATURA/AA`**: Um script para automatizar a remoção ou limpeza de certificados A1 específicos, ideal para manutenção e gestão de ambientes que utilizam assinaturas digitais.
+* **`VERIFICA LICENÇA A1`**: Um script para verificar a existencia de certificados A1, ideal para manutenção e gestão de ambientes que utilizam assinaturas digitais.
+* **`COMPILA LICENÇAS A1`**: Um script para compilar todos os ".CSV" gerados pelo **`VERIFICA LICENÇA A1`**, ideal para visualização dos resultados.
 
 ## 🚀 Como Usar
 
@@ -34,7 +36,8 @@ Esta pasta contém scripts desenvolvidos para gerenciar e interagir com certific
 
 ## 🤝 Contribuições
 
-Contribuições são bem-vindas! Se você tiver um script que gostaria de adicionar ou uma melhoria para um script existente, sinta-se à vontade para abrir uma *issue* ou enviar um *pull request*.
+Contribuições são bem-vindas!
+Se você tiver um script que gostaria de adicionar ou uma melhoria para um script existente, sinta-se à vontade para abrir uma *issue* ou enviar um *pull request*.
 
 ## 📝 Licença
 
