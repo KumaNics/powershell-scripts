@@ -1,0 +1,76 @@
+<#
+.SYNOPSIS
+    SCRIPT PARA COMPILAR TODOS OS CSV EM UM ÚNICO XLSX.
+#>
+
+# VALIDAÇÃO DO IMPORT EXCEL
+    $nomeModulo = "ImportExcel"
+    Write-Host "Verificando se o módulo '$nomeModulo' está instalado..."
+    
+    if (-not (Get-Module -Name $nomeModulo -ListAvailable)) {
+        Write-Warning "Módulo '$nomeModulo' não encontrado. Tentando instalar..."
+        try {
+            Install-Module -Name $nomeModulo -Repository PSGallery -Force -AcceptLicense -Scope CurrentUser -ErrorAction Stop
+            Write-Host "Módulo '$nomeModulo' instalado com sucesso." -ForegroundColor Green
+        } catch {
+            Write-Error "Falha ao instalar o módulo '$nomeModulo'. O script não pode continuar."
+            return
+        }
+    } else {
+        Write-Host "Módulo '$nomeModulo' já está instalado."
+    }
+    
+    Import-Module -Name $nomeModulo
+    Write-Host "--------------------------------------------------------"
+
+
+# SCRIPT
+    # LOCAL SALVO DOS CSV
+    $CaminhoOrigem = "[INSIRA AQUI]" 
+    
+    # LOCAL ONDE O XLSX SERÁ SALVO
+    $CaminhoDestino = "[INSIRA AQUI]" 
+    $NomeArquivoFinal = "[INSIRA AQUI]" 
+    $ArquivoDeSaida = Join-Path -Path $CaminhoDestino -ChildPath $NomeArquivoFinal
+    
+    try {
+        Write-Host "Iniciando a compilação..." -ForegroundColor Cyan
+        Write-Host "Procurando arquivos CSV em: $CaminhoOrigem"
+    
+        if (-not (Test-Path -Path $CaminhoOrigem)) {
+            Write-Error "O caminho de origem '$CaminhoOrigem' não foi encontrado ou está inacessível."
+            return 
+        }
+    
+        $arquivosCSV = Get-ChildItem -Path $CaminhoOrigem -Filter '*.csv' -ErrorAction Stop
+        
+        if ($arquivosCSV.Count -eq 0) {
+            Write-Warning "Nenhum arquivo CSV encontrado para compilar no caminho especificado."
+            Write-Host "Conteúdo encontrado na pasta (todos os tipos de arquivo):"
+            Get-ChildItem -Path $CaminhoOrigem | ForEach-Object { Write-Host " - $($_.Name)" }
+            return
+        }
+    
+        Write-Host "Encontrados $($arquivosCSV.Count) arquivos para compilar:"
+        $arquivosCSV.Name | ForEach-Object { Write-Host " - $_" }
+        
+        $dadosCompilados = $arquivosCSV | ForEach-Object {
+            Import-Csv -Path $_.FullName -Delimiter ';'
+        }
+    
+        Write-Host "Removendo duplicatas, mantendo o registro mais recente..."
+        $dadosUnicos = $dadosCompilados | Sort-Object -Property DataDaVerificacao -Descending | Sort-Object -Property Computador, UsuarioLogado -Unique
+    
+        Write-Host "Total de $($dadosUnicos.Count) registros únicos compilados."
+    
+        Write-Host "Exportando dados para: $ArquivoDeSaida" -ForegroundColor Green
+        $dadosUnicos | Export-Excel -Path $ArquivoDeSaida -AutoSize -TableName "InventarioCertificados" -TableStyle Medium6 -FreezeTopRow -WorksheetName "Inventario"
+        
+        Write-Host "--------------------------------------------------------"
+        Write-Host "Processo concluído com sucesso!" -ForegroundColor Green
+        Write-Host "Relatório compilado salvo em: $ArquivoDeSaida"
+    
+    } catch {
+        Write-Error "Ocorreu um erro crítico durante a execução: $($_.Exception.Message)"
+        Write-Error "Erro na linha: $($_.InvocationInfo.ScriptLineNumber)"
+    }
