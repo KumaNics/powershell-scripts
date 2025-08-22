@@ -13,8 +13,8 @@ O objetivo principal deste repositório é fornecer soluções práticas atravé
 
 Esta pasta contém scripts desenvolvidos para gerenciar e interagir com certificados digitais do tipo A1.
 
-* **`VERIFICA LICENÇA A1`**: Um script para verificar a existencia de certificados A1, ideal para manutenção e gestão de ambientes que utilizam assinaturas digitais.
-* **`COMPILA LICENÇAS A1`**: Um script para compilar todos os ".CSV" gerados pelo **`VERIFICA LICENÇA A1`**, ideal para visualização dos resultados.
+* **`VALIDA LICENÇAS A1`**: Um script para verificar a existencia de certificados A1, ideal para manutenção e gestão de ambientes que utilizam assinaturas digitais.
+* **`COMPILA LICENÇAS A1`**: Um script para compilar todos os ".CSV" gerados pelo **`VALIDA LICENÇAS A1`**, ideal para visualização dos resultados.
 
 ## 🚀 Como Usar
 
