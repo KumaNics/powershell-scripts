@@ -1,0 +1,22 @@
+<#
+  .SYNOPSIS 
+    SCRIPT PARA COPIAR O XLSX PARA OUTRO LOCAL DE ARMAZENAMENTO
+#>
+
+$Arquivo = "[INSIRA AQUI]" 
+
+$PastaDestino = "[INSIRA AQUI]" 
+
+# SCRIPT
+  if (Test-Path $Arquivo) {
+      try {
+          Copy-Item -Path $Arquivo -Destination $PastaDestino
+          Write-Host "Sucesso: O arquivo '$($Arquivo)' foi copiado para '$($PastaDestino)'."
+      }
+      catch {
+          Write-Host "Erro: Não foi possível copiar o arquivo. Detalhes do erro: $_"
+      }
+  }
+  else {
+      Write-Host "Erro: O arquivo de origem '$($Arquivo)' não foi encontrado."
+  }
