@@ -1,32 +1,29 @@
 <#
 .SYNOPSIS
-    Script para inventariar certificados digitais A1, executado via GPO de Logon/Logoff.
+    Script para inventariar certificados digitais A1, executado via GPO de Logon.
 #>
 
-# CONFIGURAÇÃO
-
-$CaminhoRepositorioCentral = "[INCLUA O LOCAL AQUI]"
+$CaminhoRepositorioCentral = "[INSIRA AQUI]" 
 
 # SCRIPT
 try {
-    # Captura a data e hora exatas do momento em que o script roda.
+    # DATA E HORA DA RODAGEM DO SCRIPT
     $dataVerificacao = Get-Date
 
-    # Captura as informações da máquina e do usuário logado
+    # INFORMAÇÕES DA MÁQUINA E DO USUÁRIO LOGADO
     $NomeComputador = $env:COMPUTERNAME
     $NomeUsuario = $env:USERNAME
 
-    # Cria o nome do arquivo de saída no formato MÁQUINA-USUÁRIO.csv
+    # CRIA O PADRÃO DO ARQUIVO MÁQUINA-USUÁRIO.csv
     $nomeArquivo = "$NomeComputador-$NomeUsuario.csv"
     $ArquivoDeSaida = Join-Path -Path $CaminhoRepositorioCentral -ChildPath $nomeArquivo
 
-    # Garante que o diretório de destino exista.
+    # VERIFICA A EXISTENCIA DO DIRETORIO
     if (-not (Test-Path -Path $CaminhoRepositorioCentral)) {
-        # Esta linha tentará criar a pasta, mas o ideal é que ela já exista com as permissões corretas.
         New-Item -Path $CaminhoRepositorioCentral -ItemType Directory -Force | Out-Null
     }
     
-    # Locais onde os certificados são comumente instalados
+    # LOCAL DE INSTALAÇÃO DE CERTIFICADOS
     $LocaisVerificacao = @(
         "Cert:\CurrentUser\My",
         "Cert:\LocalMachine\My"
@@ -34,18 +31,17 @@ try {
 
     $certificadosEncontrados = @()
 
-    # Itera sobre cada local de armazenamento de certificados
+    # CERTIFICADOS
     foreach ($local in $LocaisVerificacao) {
-        $certificadosInstalados = Get-ChildItem -Path $local | Where-Object { $_.HasPrivateKey -and $_.Subject -like '[INCLUA PARA BUSCAR QUAL A1 ESPECIFICO DESEJA]' }
+        $certificadosInstalados = Get-ChildItem -Path $local | Where-Object { $_.HasPrivateKey } 
 
-        # Processa cada certificado encontrado no local atual
         foreach ($cert in $certificadosInstalados) {
             $cnpj = ""
             if ($cert.Subject -match 'CNPJ:(\d{14})' -or $cert.Subject -match ':(\d{14})') {
                 $cnpj = $matches[1]
             }
 
-            # Cria um objeto personalizado com as informações relevantes do certificado
+            # SAIDA DO CSV
             $infoCertificado = [PSCustomObject]@{
                 Computador      = $NomeComputador
                 UsuarioLogado   = $NomeUsuario
@@ -62,13 +58,13 @@ try {
         }
     }
 
-    # Se pelo menos um certificado foi encontrado, exporta os dados para o arquivo CSV.
+    # EXPORTA OS DADOS PARA O CSV
     if ($certificadosEncontrados.Count -gt 0) {
         $certificadosEncontrados | Export-Csv -Path $ArquivoDeSaida -NoTypeInformation -Encoding UTF8 -Delimiter ';'
     }
 
 } catch {
-    # Captura e registra qualquer erro que possa ocorrer durante a execução.
+    # LOG DE ERROS
     $mensagemErro = "[$([DateTime]::Now)] ERRO no computador ${NomeComputador} (Usuário: $NomeUsuario): $($_.Exception.Message)"
     $arquivoLogErro = Join-Path -Path $CaminhoRepositorioCentral -ChildPath "_log_de_erros.txt"
     Add-Content -Path $arquivoLogErro -Value $mensagemErro
