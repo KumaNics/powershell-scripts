@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Script para inventariar certificados digitais A1, executado via GPO de Logon.
+    SCRIPT PARA VERIFICAR CERTIFICADOS A1 INSTALADOS VIA GPO LOGON/LOGOFF
 #>
 
 $CaminhoRepositorioCentral = "[INSIRA AQUI]" 
