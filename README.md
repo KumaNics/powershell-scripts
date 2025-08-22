@@ -14,7 +14,9 @@ O objetivo principal deste repositório é fornecer soluções práticas atravé
 Esta pasta contém scripts desenvolvidos para gerenciar e interagir com certificados digitais do tipo A1.
 
 * **`VALIDA LICENÇAS A1`**: Um script para verificar a existencia de certificados A1, ideal para manutenção e gestão de ambientes que utilizam assinaturas digitais.
-* **`COMPILA LICENÇAS A1`**: Um script para compilar todos os ".CSV" gerados pelo **`VALIDA LICENÇAS A1`**, ideal para visualização dos resultados.
+* **`COMPILA CERTIFICADO A1`**: Um script para compilar todos os ".CSV" gerados pelo **`VALIDA LICENÇAS A1`**, ideal para visualização dos resultados.
+* **`COPIA RELATORIO`**: Um script para copiar o relatório gerado pelo script **`COMPILA CERTIFICADO A1`** e encaminha a cópia a outro diretório.
+* **`COMPILA.BAT`**: Um script .BAT para execução do **`COMPILA CERTIFICADO A1`** via **`AGENDADOR DE TAREFAS`**.
 
 ## 🚀 Como Usar
 
