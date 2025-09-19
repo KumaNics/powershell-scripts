@@ -1,0 +1,42 @@
+<#
+    .SYNOPSIS
+        PS1 PARA EXCLUIR PASTAS E ARQUIVOS.
+#>
+
+#===================================================================#
+#                           CONFIGURACAO                            #
+#===================================================================#
+
+$Caminho = "[INSIRA AQUI]"
+
+$NaoExclui = '[INSIRA AQUI]'
+
+#===================================================================#
+#                               SCRIPT                              #
+#===================================================================#
+
+Write-Host "INICIANDO LIMPEZA NO CAMINHO: '$Caminho'..." -ForegroundColor Cyan
+Write-Host "A PASTA '$NaoExclui' NÃO SERÁ EXCLUIDA." -ForegroundColor Cyan
+
+try {
+    #VERIFICA CAMINHO
+    Get-ChildItem -Path $Caminho -Force | ForEach-Object {
+        $Item = $_
+
+        if ($Item.Name -ne $NaoExclui) {
+            Write-Host "EXCLUÍNDO: $($Item.FullName)" -ForegroundColor Yellow
+            
+            #REMOVE ARQUIVOS.
+            Remove-Item -Path $Item.FullName -Recurse -Force -ErrorAction Stop
+        }
+        else {
+            Write-Host "PASTA NÃO EXCLUÍDA: $($Item.FullName)" -ForegroundColor Gray
+        }
+    }
+}
+catch {
+    #CATCH DE ERRO
+    Write-Error "OCORREU UM ERRO DURANTE A EXECUÇÃO: $_"
+}
+
+Write-Host "`nLIMPEZA CONCLUÍDA." -ForegroundColor Green
