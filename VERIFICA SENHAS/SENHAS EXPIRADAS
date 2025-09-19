@@ -1,0 +1,95 @@
+<#
+    .SYNOPSIS
+        GERA UM ".CSV" NO SERVIDOR COM RELATORIO DE USUARIOS ATIVOS
+        CUJAS SENHAS VAO EXPIRAR EM ATE 4 DIAS.
+#>
+
+#-------------------------------------------------------------------#
+#                               CONFIGURACAO                         #
+#-------------------------------------------------------------------#
+
+# INICIO DO TEMPO
+$inicio = Get-Date
+
+# IMPORT DO AD
+Import-Module ActiveDirectory
+
+# BUSCA DC/OU DO AD
+$dataAtual = Get-Date
+$searchBase = "[INSIRA AQUI]"
+
+#-------------------------------------------------------------------#
+#                               SCRIPT                               #
+#-------------------------------------------------------------------#
+
+Write-Host "Buscando usuarios ativos..." -ForegroundColor Cyan
+
+# BUSCA INFO USUARIOS
+try {
+    $usuariosAtivos = Get-ADUser -SearchBase $searchBase -Filter {Enabled -eq $true} -Properties `
+        "msDS-UserPasswordExpiryTimeComputed", "Department", "EmailAddress"
+} catch {
+    Write-Host "Erro ao buscar usuarios habilitados: $_" -ForegroundColor Red
+    exit
+}
+
+$results = @()
+
+foreach ($user in $usuariosAtivos) {
+    # CALCULA EXPIRACAO DE SENHA
+    $expiryTime         = $user."msDS-UserPasswordExpiryTimeComputed"
+    $dataExpira         = $null
+    $senhaExpirada      = $false
+    $diasParaExpirar    = $null
+
+    if ($expiryTime -and $expiryTime -ne 0 -and $expiryTime -ne [long]::MaxValue) {
+        $dataExpira         = [datetime]::FromFileTime($expiryTime)
+        $senhaExpirada      = $dataExpira -lt $dataAtual
+        $diasParaExpirar    = [math]::Round(($dataExpira - $dataAtual).TotalDays)
+    }
+
+    # OBJETO PERSONALIZADO
+    if ($senhaExpirada -or ($diasParaExpirar -le 4 -and $diasParaExpirar -ge 0)) {
+        $results += [PSCustomObject]@{
+            Nome               = $user.Name
+            SamAccountName     = $user.SamAccountName
+            Email              = $user.EmailAddress
+            Departamento       = $user.Department
+            SenhaExpirada      = if ($senhaExpirada) { "Sim" } else { "Nao" }
+            Expira             = if ($dataExpira) { $dataExpira.ToString("dd/MM/yyyy HH:mm:ss") } else { "Nunca" }
+            EmTantosDias       = $diasParaExpirar
+        }
+    }
+}
+
+#--------------------------------------------------------------------#
+#                               SAIDA                                #
+#--------------------------------------------------------------------#
+
+# EXPORT CSV
+$csvPath = "[INSIRA AQUI]"
+$header = "Nome;SamAccountName;Email;Departamento;SenhaExpirada;Expira;EmTantosDias"
+
+$linhas = $results | ForEach-Object {
+    "$($_.Nome);$($_.SamAccountName);$($_.Email);$($_.Departamento);$($_.SenhaExpirada);$($_.Expira);$($_.EmTantosDias)"
+}
+
+$linhas = ,$header + $linhas
+$linhas | Out-File -FilePath $csvPath -Encoding UTF8
+
+Write-Host "CSV exportado para '$csvPath'" -ForegroundColor Cyan
+
+# RETORNA OS USUARIOS NO CONSOLE
+if ($results.Count -gt 0) {
+    Write-Host "`nUsuarios com senha expirada ou prestes a expirar em ate 4 dias:" -ForegroundColor Cyan
+    $results | Format-Table Nome, SamAccountName, Email, Departamento, SenhaExpirada, Expira, EmTantosDias -AutoSize
+} else {
+    Write-Host "`nNenhum usuario encontrado com os criterios." -ForegroundColor Green
+}
+
+Write-Host "Total de usuarios encontrados: $($results.Count)" -ForegroundColor Green
+
+# TEMPO DE EXECUCAO
+$fim        = Get-Date
+$duracao    = $fim - $inicio
+Write-Host ("Tempo total de execucao: {0:hh\:mm\:ss\.fff}" -f $duracao) -ForegroundColor Cyan
