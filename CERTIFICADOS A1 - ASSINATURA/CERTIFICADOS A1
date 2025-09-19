@@ -1,29 +1,29 @@
 <#
 .SYNOPSIS
-    SCRIPT PARA VERIFICAR CERTIFICADOS A1 INSTALADOS VIA GPO LOGON/LOGOFF
+    Script para inventariar certificados digitais A1, executado via GPO de Logon/Logoff.
 #>
 
-$CaminhoRepositorioCentral = "[INSIRA AQUI]" 
+#---------------------------------------------------#
+#                   CONFIGURACAO                    #
+#---------------------------------------------------#
 
-# SCRIPT
+$CaminhoRepositorioCentral = "[INSIRA AQUI]"
+
+#LOGICA DO SCRIPT
 try {
-    # DATA E HORA DA RODAGEM DO SCRIPT
     $dataVerificacao = Get-Date
 
-    # INFORMAÇÕES DA MÁQUINA E DO USUÁRIO LOGADO
     $NomeComputador = $env:COMPUTERNAME
     $NomeUsuario = $env:USERNAME
 
-    # CRIA O PADRÃO DO ARQUIVO MÁQUINA-USUÁRIO.csv
     $nomeArquivo = "$NomeComputador-$NomeUsuario.csv"
     $ArquivoDeSaida = Join-Path -Path $CaminhoRepositorioCentral -ChildPath $nomeArquivo
 
-    # VERIFICA A EXISTENCIA DO DIRETORIO
     if (-not (Test-Path -Path $CaminhoRepositorioCentral)) {
         New-Item -Path $CaminhoRepositorioCentral -ItemType Directory -Force | Out-Null
     }
     
-    # LOCAL DE INSTALAÇÃO DE CERTIFICADOS
+    #LOCAIS DE INSTALACAO DOS CERTIFICADOS
     $LocaisVerificacao = @(
         "Cert:\CurrentUser\My",
         "Cert:\LocalMachine\My"
@@ -31,9 +31,9 @@ try {
 
     $certificadosEncontrados = @()
 
-    # CERTIFICADOS
+    #FILTRO DOS CERTIFICADOS
     foreach ($local in $LocaisVerificacao) {
-        $certificadosInstalados = Get-ChildItem -Path $local | Where-Object { $_.HasPrivateKey } 
+        $certificadosInstalados = Get-ChildItem -Path $local | Where-Object { $_.HasPrivateKey } # <- FILTROS AQUI
 
         foreach ($cert in $certificadosInstalados) {
             $cnpj = ""
@@ -41,7 +41,7 @@ try {
                 $cnpj = $matches[1]
             }
 
-            # SAIDA DO CSV
+            #OBJETO PERSONALIZADO
             $infoCertificado = [PSCustomObject]@{
                 Computador      = $NomeComputador
                 UsuarioLogado   = $NomeUsuario
@@ -53,19 +53,16 @@ try {
                 Repositorio     = $local
                 DataDaVerificacao = $dataVerificacao
             }
-
             $certificadosEncontrados += $infoCertificado
         }
     }
 
-    # EXPORTA OS DADOS PARA O CSV
     if ($certificadosEncontrados.Count -gt 0) {
         $certificadosEncontrados | Export-Csv -Path $ArquivoDeSaida -NoTypeInformation -Encoding UTF8 -Delimiter ';'
     }
 
 } catch {
-    # LOG DE ERROS
-    $mensagemErro = "[$([DateTime]::Now)] ERRO no computador ${NomeComputador} (Usuário: $NomeUsuario): $($_.Exception.Message)"
+    $mensagemErro = "[$([DateTime]::Now)] ERRO no computador ${NomeComputador} (UsuÃ¡rio: $NomeUsuario): $($_.Exception.Message)"
     $arquivoLogErro = Join-Path -Path $CaminhoRepositorioCentral -ChildPath "_log_de_erros.txt"
     Add-Content -Path $arquivoLogErro -Value $mensagemErro
 }
