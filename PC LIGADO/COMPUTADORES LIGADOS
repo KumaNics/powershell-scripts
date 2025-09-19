@@ -1,0 +1,143 @@
+<#
+.SYNOPSIS
+    GERA ".XLSX" DOS COMPUTADORES LIGADOS
+#>
+
+# ======================================================================================================#
+#                                         CONFIGURAÇÕES                                                 #
+# ======================================================================================================#
+
+Import-Module ImportExcel -ErrorAction Stop
+
+$limiteDias = [INSIRA AQUI]
+$ouAlvoComputadores = "[INSIRA AQUI]"
+$OutputFile = "[INSIRA AQUI]"
+
+# IMPORT DO AD
+try {
+    Import-Module ActiveDirectory -ErrorAction Stop
+} catch {
+    Write-Host "Erro ao carregar o módulo ActiveDirectory: $_" -ForegroundColor Red
+    Write-Host "O script continuará, mas não conseguirá obter o nome completo ou e-mail do usuário." -ForegroundColor Yellow
+}
+
+$dataAtual = Get-Date
+
+# ======================================================================================================#
+#                                     BUSCA COMPUTADORES DA OU                                          #
+# ======================================================================================================#
+
+try {
+    Write-Host "Buscando computadores na OU '$ouAlvoComputadores'..." -ForegroundColor Cyan
+    $computadores = Get-ADComputer -Filter 'Enabled -eq $true' -SearchBase $ouAlvoComputadores -ErrorAction Stop | Select-Object Name
+} catch {
+    Write-Error "ERRO: Não foi possível encontrar a OU '$ouAlvoComputadores'. Verifique o caminho."
+    return
+}
+
+if ($null -eq $computadores -or $computadores.Count -eq 0) {
+    Write-Host "Nenhum computador encontrado na OU '$ouAlvoComputadores'. Encerrando o script." -ForegroundColor Yellow
+    return
+}
+
+# COLETA E ARMAZENA DADOS
+$relatorio = foreach ($computador in $computadores) {
+
+    $nomeComputador = $computador.Name
+    $nomeCompleto = 'N/A'
+    $email = 'N/A'
+    $diasLigado = 'N/A'
+    $status = 'N/A'
+
+    Write-Host "Verificando $nomeComputador..." -ForegroundColor Cyan
+
+    # VERIFICA PING
+    if (Test-Connection -ComputerName $nomeComputador -Count 1 -Quiet) {
+        try {
+            # PEGA O TEMPO DE ATIVIDADE
+            $infoOS = Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $nomeComputador -ErrorAction Stop
+            $ultimoBoot = $infoOS.LastBootUpTime
+            $uptime = $dataAtual - $ultimoBoot
+            $diasLigado = [math]::Round($uptime.TotalDays, 1)
+
+            # CALCULA STATUS
+            $status = if ($diasLigado -ge $limiteDias) { 'True' } else { 'False' }
+
+            # PEGA O NOME DO ÚLTIMO USUÁRIO LOGADO
+            $infoSistema = Get-CimInstance -ClassName Win32_ComputerSystem -ComputerName $nomeComputador -ErrorAction Stop
+            $usuarioLogado = $infoSistema.UserName
+
+            if ($null -ne $usuarioLogado) {
+                $username = $usuarioLogado -replace '.*\\',''
+
+                # BUSCA NOME COMPLETO E E-MAIL
+                if (Get-Module ActiveDirectory) {
+                    $userInfo = Get-ADUser -Identity $username -Properties DisplayName, Mail -ErrorAction SilentlyContinue
+                    if ($null -ne $userInfo) {
+                        $nomeCompleto = $userInfo.DisplayName
+                        $email = $userInfo.Mail
+                    } else {
+                        $nomeCompleto = 'Usuário não encontrado no AD'
+                        $email = 'Não encontrado no AD'
+                    }
+
+                } else {
+                    $nomeCompleto = 'Não disponível (módulo AD não carregado)'
+                    $email = 'Não disponível (módulo AD não carregado)'
+                }
+            } else {
+                $nomeCompleto = 'Nenhum usuário logado'
+                $email = 'Nenhum usuário logado'
+                $diasLigado = 'N/A'
+                $status = 'N/A'
+            }
+        }
+        catch {
+            $diasLigado = 'Erro'
+            $nomeCompleto = 'Erro ao coletar dados'
+            $email = 'Erro ao coletar dados'
+            $status = 'N/A'
+        }
+    } else {
+        $nomeCompleto = 'Offline'
+        $email = 'Offline'
+        $diasLigado = 'N/A'
+        $status = 'N/A'
+    }
+
+    # SAIDA
+    [PSCustomObject]@{
+        'Computador'          = $nomeComputador
+        'Nome_Completo'       = $nomeCompleto
+        'E-mail'              = $email
+        'Dias_Sem_Desligar'   = $diasLigado
+        'Status'              = $status
+    }
+}
+
+# ======================================================================================================#
+#                                      EXPORTAÇÃO E EXIBIÇÃO                                            #
+# ======================================================================================================#
+
+try {
+    # 1. Converte o relatório para CSV com aspas e delimitador
+    $relatorioCSV = $relatorio | ConvertTo-Csv -NoTypeInformation -Delimiter ';'
+
+    # 2. Junta todas as linhas em uma única string, separadas por quebra de linha
+    $conteudoCSV = $relatorioCSV | Out-String
+
+    # 3. Substitui todas as aspas duplas por nada
+    $conteudoCSV_SemAspas = $conteudoCSV.Replace('"', '')
+
+    # 4. Salva a string final no arquivo
+    $conteudoCSV_SemAspas | Out-File -FilePath $OutputFile -Encoding UTF8
+
+    Write-Host "`nRelatório salvo com sucesso em: '$OutputFile'" -ForegroundColor Green
+}
+catch {
+    Write-Error "ERRO CRÍTICO: Falha ao salvar o arquivo CSV. Verifique o caminho e as permissões de escrita."
+}
+
+# TELA EXIBICAO PS PARA VALIDAR
+Write-Host "`nRESULTADOS:" -ForegroundColor Cyan
+$relatorio | Format-Table -AutoSize
