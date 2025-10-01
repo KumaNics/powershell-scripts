@@ -9,16 +9,29 @@ Este espaço é dedicado a abrigar uma coleção de scripts úteis e prontos par
 
 O objetivo principal deste repositório é fornecer soluções práticas através de scripts PowerShell para diversas necessidades, desde a administração de sistemas até a automação de tarefas do dia a dia.
 
-## 📂 Conteúdo Atual
+---
 
-### Certificados A1 - Assinatura
+## 📂 Estrutura de Pastas
 
-Esta pasta contém scripts desenvolvidos para gerenciar e interagir com certificados digitais do tipo A1.
+Aqui está a organização das pastas principais do projeto:
 
-* **`VALIDA LICENÇAS A1`**: Um script para verificar a existencia de certificados A1, ideal para manutenção e gestão de ambientes que utilizam assinaturas digitais.
-* **`COMPILA CERTIFICADO A1`**: Um script para compilar todos os ".CSV" gerados pelo **`VALIDA LICENÇAS A1`**, ideal para visualização dos resultados.
-* **`COPIA RELATORIO`**: Um script para copiar o relatório gerado pelo script **`COMPILA CERTIFICADO A1`** e encaminha a cópia a outro diretório.
-* **`COMPILA.BAT`**: Um script .BAT para execução do **`COMPILA CERTIFICADO A1`** via **`AGENDADOR DE TAREFAS`**.
+```
+/
+├── 📁 powershell-scripts/             
+    ├── 📁 CERTIFICADOA A1 - ASSINATURA/         
+        ├── 📄 CERTIFICADOS A1                            # Verifica a existência de certificados A1 de assinatura digital.
+        └── 📄 COMPILA CERTIFICADO A1                     # Compila todos os arquivos CSV gerados em um único XLSX.
+    ├── 📁 LIMPA PASTAS/         
+        └── 📄 LIMPADOR                                   # Exclui pastas/arquivos de um determinado local, com excessão de "X" pasta.
+    ├── 📁 PC LIGADO/         
+        └── 📄 COMPUTADORES LIGADOS                       # Verifica todos os computadores ligados.
+    ├── 📁 VERIFICA SENHAS/         
+        └── 📄 SENHAS EXPIRADAS                           # Gera um arquivo com informações via AD, com senhas à expirar/expiradas.
+    ├── 📄 LICENSE
+    └── 📄 README.md         # Este documento.
+```
+
+---
 
 ## 🚀 Como Usar
 
@@ -38,10 +51,14 @@ Esta pasta contém scripts desenvolvidos para gerenciar e interagir com certific
     .\seu-script.ps1
     ```
 
+---
+
 ## 🤝 Contribuições
 
 Contribuições são bem-vindas!
 Se você tiver um script que gostaria de adicionar ou uma melhoria para um script existente, sinta-se à vontade para abrir uma *issue* ou enviar um *pull request*.
+
+---
 
 ## 📝 Licença
 
