@@ -18,7 +18,7 @@ Aqui está a organização das pastas principais do projeto:
 ```
 /
 ├── 📁 powershell-scripts/             
-    ├── 📁 CERTIFICADOA A1 - ASSINATURA/         
+    ├── 📁 CERTIFICADOS A1 - ASSINATURA/         
         ├── 📄 CERTIFICADOS A1                       # Verifica a existência de certificados A1 de assinatura digital.
         └── 📄 COMPILA CERTIFICADO A1                # Compila todos os arquivos CSV gerados em um único XLSX.
     ├── 📁 LIMPA PASTAS/         
