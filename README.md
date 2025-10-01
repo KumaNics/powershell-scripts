@@ -3,6 +3,8 @@
 Bem-vindo ao repositório de Scripts PowerShell!
 Este espaço é dedicado a abrigar uma coleção de scripts úteis e prontos para uso, projetados para automatizar tarefas e simplificar processos no ambiente Windows.
 
+---
+
 ## 📜 Sobre o Repositório
 
 O objetivo principal deste repositório é fornecer soluções práticas através de scripts PowerShell para diversas necessidades, desde a administração de sistemas até a automação de tarefas do dia a dia.
